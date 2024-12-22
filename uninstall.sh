@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Очистка экрана
+clear
+
 # Функция для вывода сообщений на русском языке
 function rus {
     echo "Вы уверены, что хотите удалить Pterodactyl Panel? (y/n)"
@@ -41,19 +44,19 @@ fi
 
 # Удаление пользователей Pterodactyl
 echo "Удаление пользователей Pterodactyl..."
-mysql -u root -p -e "DROP USER 'pterodactyl'@'127.0.0.1';"
-mysql -u root -p -e "DROP USER 'pterodactyl'@'localhost';"
+mysql -u root -p -e "DROP USER 'pterodactyl'@'127.0.0.1';" || { echo "Ошибка при удалении пользователя 'pterodactyl'@'127.0.0.1'."; exit 1; }
+mysql -u root -p -e "DROP USER 'pterodactyl'@'localhost';" || { echo "Ошибка при удалении пользователя 'pterodactyl'@'localhost'."; exit 1; }
 
 # Удаление базы данных Pterodactyl
 echo "Удаление базы данных Pterodactyl..."
-mysql -u root -p -e "DROP DATABASE IF EXISTS pterodactyl;"
+mysql -u root -p -e "DROP DATABASE IF EXISTS pterodactyl;" || { echo "Ошибка при удалении базы данных."; exit 1; }
 
 # Удаление файлов Pterodactyl
 echo "Удаление файлов Pterodactyl..."
-rm -rf /var/www/pterodactyl
+rm -rf /var/www/pterodactyl || { echo "Ошибка при удалении файлов."; exit 1; }
 
 # Удаление зависимостей
 echo "Удаление зависимостей Pterodactyl..."
-apt-get remove --purge -y <пакеты_зависимостей>
+apt-get remove --purge -y <пакеты_зависимостей> || { echo "Ошибка при удалении зависимостей."; exit 1; }
 
 echo "Pterodactyl успешно удален!"
