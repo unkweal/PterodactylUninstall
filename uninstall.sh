@@ -1,62 +1,48 @@
 #!/bin/bash
 
-# Очистка экрана
+# Clear the screen
 clear
 
-# Функция для вывода сообщений на русском языке
-function rus {
-    echo "Вы уверены, что хотите удалить Pterodactyl Panel? (y/n)"
+# Function to display a header
+function header {
+    echo "========================================="
+    echo "$1"
+    echo "========================================="
 }
 
-# Функция для вывода сообщений на английском языке
-function eng {
-    echo "Are you sure you want to remove Pterodactyl Panel? (y/n)"
+# Function to confirm removal
+function confirm_removal {
+    echo "Are you sure you want to remove the Pterodactyl Panel? (y/n)"
 }
 
-# Выбор языка
-echo "Выберите язык / Choose your language:"
-echo "1) Русский"
-echo "2) English"
-read -p "Введите номер языка / Enter language number: " lang_choice
+# Display header
+header "Pterodactyl Panel Uninstaller"
 
-if [ "$lang_choice" -eq 1 ]; then
-    language="rus"
-elif [ "$lang_choice" -eq 2 ]; then
-    language="eng"
-else
-    echo "Неверный выбор языка / Invalid language choice."
-    exit 1
-fi
-
-# Подтверждение удаления
-if [ "$language" == "rus" ]; then
-    rus
-else
-    eng
-fi
-
-read -p "Введите ваш ответ: " confirm
+# Confirmation prompt
+confirm_removal
+read -p "Enter your response: " confirm
 
 if [[ ! "$confirm" =~ ^[Yy]$ ]]; then
-    echo "Удаление отменено."
+    echo "Removal canceled. Exiting..."
     exit 0
 fi
 
-# Удаление пользователей Pterodactyl
-echo "Удаление пользователей Pterodactyl..."
-mysql -u root -p -e "DROP USER 'pterodactyl'@'127.0.0.1';" || { echo "Ошибка при удалении пользователя 'pterodactyl'@'127.0.0.1'."; exit 1; }
-mysql -u root -p -e "DROP USER 'pterodactyl'@'localhost';" || { echo "Ошибка при удалении пользователя 'pterodactyl'@'localhost'."; exit 1; }
+# Remove Pterodactyl users
+header "Removing Pterodactyl Users"
+mysql -u root -p -e "DROP USER 'pterodactyl'@'127.0.0.1';" || { echo "Error removing user 'pterodactyl'@'127.0.0.1'."; exit 1; }
+mysql -u root -p -e "DROP USER 'pterodactyl'@'localhost';" || { echo "Error removing user 'pterodactyl'@'localhost'."; exit 1; }
 
-# Удаление базы данных Pterodactyl
-echo "Удаление базы данных Pterodactyl..."
-mysql -u root -p -e "DROP DATABASE IF EXISTS pterodactyl;" || { echo "Ошибка при удалении базы данных."; exit 1; }
+# Remove Pterodactyl database
+header "Removing Pterodactyl Database"
+mysql -u root -p -e "DROP DATABASE IF EXISTS pterodactyl;" || { echo "Error removing database."; exit 1; }
 
-# Удаление файлов Pterodactyl
-echo "Удаление файлов Pterodactyl..."
-rm -rf /var/www/pterodactyl || { echo "Ошибка при удалении файлов."; exit 1; }
+# Remove Pterodactyl files
+header "Removing Pterodactyl Files"
+rm -rf /var/www/pterodactyl || { echo "Error removing files."; exit 1; }
 
-# Удаление зависимостей
-echo "Удаление зависимостей Pterodactyl..."
-apt-get remove --purge -y <пакеты_зависимостей> || { echo "Ошибка при удалении зависимостей."; exit 1; }
+# Remove dependencies
+header "Removing Pterodactyl Dependencies"
+apt-get remove --purge -y <dependencies_packages> || { echo "Error removing dependencies."; exit 1; }
 
-echo "Pterodactyl успешно удален!"
+# Completion message
+header "Pterodactyl has been successfully removed!"
