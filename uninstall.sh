@@ -5,14 +5,12 @@ clear
 
 # Function to display a header
 function header {
-    echo "========================================="
     echo "$1"
-    echo "========================================="
 }
 
 # Function to confirm removal
 function confirm_removal {
-    echo "Are you sure you want to remove the Pterodactyl Panel? (y/n)"
+    echo "Are you sure you want to remove the Pterodactyl Panel and Wings? (y/n)"
 }
 
 # Function for loading animation
@@ -26,7 +24,7 @@ function loading {
 }
 
 # Display header
-header "Pterodactyl Panel Uninstaller"
+header "Pterodactyl Panel and Wings Uninstaller"
 
 # Confirmation prompt
 confirm_removal
@@ -37,26 +35,50 @@ if [[ ! "$confirm" =~ ^[Yy]$ ]]; then
     exit 0
 fi
 
-# Remove Pterodactyl users
-header "Removing Pterodactyl Users"
-loading "Removing users"
-mysql -u root -p -e "DROP USER 'pterodactyl'@'127.0.0.1';" || { echo "Error removing user 'pterodactyl'@'127.0.0.1'."; exit 1; }
-mysql -u root -p -e "DROP USER 'pterodactyl'@'localhost';" || { echo "Error removing user 'pterodactyl'@'localhost'."; exit 1; }
+# Remove Pterodactyl panel files
+header "Removing Pterodactyl Panel Files"
+loading "Removing panel files"
+sudo rm -rf /var/www/pterodactyl || { echo "Error removing Pterodactyl panel files."; exit 1; }
 
-# Remove Pterodactyl database
-header "Removing Pterodactyl Database"
-loading "Removing database"
-mysql -u root -p -e "DROP DATABASE IF EXISTS pterodactyl;" || { echo "Error removing database."; exit 1; }
+# Remove Pteroq queue worker
+header "Removing Pteroq Queue Worker"
+loading "Removing pteroq.service"
+sudo rm /etc/systemd/system/pteroq.service || { echo "Error removing pteroq.service."; exit 1; }
 
-# Remove Pterodactyl files
-header "Removing Pterodactyl Files"
-loading "Removing files"
-rm -rf /var/www/pterodactyl || { echo "Error removing files."; exit 1; }
+# Unlink nginx configuration
+header "Removing Nginx Configuration"
+loading "Removing nginx config"
+sudo unlink /etc/nginx/sites-enabled/pterodactyl.conf || { echo "Error removing nginx configuration."; exit 1; }
 
-# Remove dependencies
-header "Removing Pterodactyl Dependencies"
-loading "Removing dependencies"
-apt-get remove --purge -y <dependencies_packages> || { echo "Error removing dependencies."; exit 1; }
+# Unlink apache configuration
+header "Removing Apache Configuration"
+loading "Removing apache config"
+sudo unlink /etc/apache2/sites-enabled/pterodactyl.conf || { echo "Error removing apache configuration."; exit 1; }
+
+# Stop Wings
+header "Stopping Wings"
+loading "Stopping wings"
+sudo systemctl stop wings || { echo "Error stopping wings."; exit 1; }
+
+# Remove Wings game server files and backups
+header "Removing Wings Files and Backups"
+loading "Removing game server files"
+sudo rm -rf /var/lib/pterodactyl || { echo "Error removing game server files."; exit 1; }
+
+# Remove Wings config
+header "Removing Wings Configuration"
+loading "Removing wings config"
+sudo rm -rf /etc/pterodactyl || { echo "Error removing wings configuration."; exit 1; }
+
+# Remove Wings binary
+header "Removing Wings Binary"
+loading "Removing wings binary"
+sudo rm /usr/local/bin/wings || { echo "Error removing wings binary."; exit 1; }
+
+# Remove Wings daemon file
+header "Removing Wings Daemon File"
+loading "Removing wings.service"
+sudo rm /etc/systemd/system/wings.service || { echo "Error removing wings.service."; exit 1; }
 
 # Completion message
-header "Pterodactyl has been successfully removed!"
+header "Pterodactyl Panel and Wings have been successfully removed!"
